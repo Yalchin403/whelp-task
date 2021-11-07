@@ -1,0 +1,61 @@
+version: "3"
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: 'rabbitmq'
+    ports:
+        - "5672:5672"
+        - "15672:15672"
+
+  worker:
+    container_name: "worker"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: madefire/chordtest
+    links:
+      - "rabbitmq:rabbitmq"
+    depends_on:
+      - rabbitmq
+      - db
+    command: bash -c "celery -A worker_task worker -l INFO"
+
+  db:
+    container_name: "db"
+    image: mysql
+    restart: always
+    environment:
+      MYSQ_PASSWORD: password
+      MYSQL_USER: user
+      MYSQL_DATABASE: test
+      MYSQL_ROOT_PASSWORD: example
+
+    ports:
+      - "3306:3306"
+      - "33060:33060"
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+
+  api:
+    container_name: "api"
+    build: .
+    restart: always
+    ports:
+      - "5000:8000"
+    links:
+      - "db:db"
+      - "rabbitmq:rabbitmq"
+      - "worker:worker"
+    depends_on: 
+      - db
+      - worker
+    command: bash -c "uvicorn index:app --host 0.0.0.0 --port 8000"  
