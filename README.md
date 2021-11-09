@@ -17,7 +17,7 @@ Also before running the test cases, make sure you create a user with following d
 }
 ```
 
-Docs for all the endpoints are available in the https://localhost:5000 if you run the application locally.
+Docs for all the endpoints are available in the https://localhost:5000/docs (make sure to change port if you run the application on different port) if you run the application locally.
 
 To install all the dependencies execute `pip install -r reqs.txt`
 
